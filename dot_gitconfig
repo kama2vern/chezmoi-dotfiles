@@ -1,0 +1,40 @@
+[user]
+    name  = Mitsushige Komiya
+    email = s.wyvern.acespring@gmail.com
+[include]
+  path = ~/.gitconfig.local
+
+[github]
+  user = kama2vern
+
+[color]
+  diff        = auto
+  grep        = auto
+  branch      = auto
+  status      = auto
+  interactive = auto
+
+[core]
+  editor       = /usr/local/bin/nvim
+  autoCRLF     = false
+  quotepath    = false
+  excludesfile = ~/.gitexcludes
+
+[alias]
+	st = status
+	br = branch
+	co = checkout
+	ci = commit
+
+[ghq]
+  root = ~/src
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[fetch]
+	parallel = 0
+[checkout]
+	workers = 0
