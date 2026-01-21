@@ -110,6 +110,9 @@ eval "$(direnv hook zsh)"
 
 {{ else if eq .chezmoi.os "linux" -}}
 # Linux .zshrc contents
+# ホストOSのsshクライアント(1Password SSH Agent)を使うためのエイリアス
+alias ssh=ssh.exe
+alias ssh-add=ssh-add.exe
 
 {{ else if eq .chezmoi.os "windows" -}}
 # Windows .zshrc contents
