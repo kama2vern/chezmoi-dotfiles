@@ -1,0 +1,87 @@
+# C-tをtmuxプレフィックス化
+unbind C-b
+set -g prefix C-t
+bind C-t send-prefix
+
+# vimのモード切替のためにEscキーの待機時間を0に
+set -sg escape-time 0
+
+# C-rで.tmux.confのreload
+bind r source-file ~/.tmux.conf \; display "Reloaded!"
+
+# ウィンドウ水平・垂直分割
+bind | split-window -h
+bind - split-window -v
+
+# vimのようにペイン移動
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# vimのようにペインリサイズ
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# マウスでペイン移動、リサイズ、スクロールを可能にする
+setw -g mouse on
+
+# 256 color terminal
+set -g default-terminal "xterm-256color"
+
+# common: vimライクなコピーモード
+# OS別にクリップボード共有設定を追加
+setw -g mode-keys vi
+bind-key Escape copy-mode
+unbind -T copy-mode-vi Enter
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+bind-key -T copy-mode-vi Escape send-keys cancel
+
+# ステータスバー設定
+set-option -g status on
+
+# ステータスバーの更新間隔、位置、長さなど
+set-option -g status-interval 2
+set-option -g status-justify "left"
+set-option -g status-left-length 32
+set-option -g status-right-length 150
+
+# ステータスバーの見た目設定
+set -g status-left-length 64
+set -g status-right-length 150
+
+# 色設定
+set -g status-style dim,fg=white,bg=colour234
+
+# ペイン境界線の色設定
+set -g pane-border-style fg=colour245
+set -g pane-active-border-style fg=colour39
+
+# ステータスバーの表示内容設定
+set -g status-left '#[fg=colour223,bg=colour202,bold]#h#[deafult] #S #[fg=colour202,bg=colour238,nobold]#[fg=colour245,bg=colour238,bold] #(whoami) #[fg=colour238,bg=colour234,nobold]'
+set -g window-status-format "#[fg=white,bg=colour234] #I #W "
+set -g window-status-current-format "#[fg=colour234,bg=colour39]#[fg=colour25,bg=colour39,noreverse,bold] #I #W #[fg=colour39,bg=colour234,bold]"
+set -g status-right '#[fg=colour33,bg=colour234,bold] %Y/%m/%d(%a)%H:%M#[default]'
+set -g message-style bold,fg=white,bg=red
+
+# 各OS別設定
+{{ if eq .chezmoi.os "darwin" -}}
+# macOS .zshrc contents
+
+    # copymode key bindings like vim
+    bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
+    bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
+
+    # share clipboard
+    set-option -g default-command "reattach-to-user-namespace -l $SHELL"
+
+{{ else if eq .chezmoi.os "linux" -}}
+# WSL2 .tmux.conf contents
+    bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "cat | win32yank.exe -i"
+    bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "cat | win32yank.exe -i"
+    bind-key C-p run-shell "win32yank -o | tmux load-buffer - && tmux paste-buffer"
+
+{{ end -}} 

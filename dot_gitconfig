@@ -1,6 +1,7 @@
 [user]
-    name  = Mitsushige Komiya
+    name  = kama2vern
     email = s.wyvern.acespring@gmail.com
+
 [include]
   path = ~/.gitconfig.local
 
@@ -34,7 +35,9 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+
 [fetch]
 	parallel = 0
+
 [checkout]
 	workers = 0

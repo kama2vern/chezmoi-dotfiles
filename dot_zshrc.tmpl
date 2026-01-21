@@ -1,0 +1,120 @@
+# common autoloads
+autoload -Uz colors
+autoload -Uz add-zsh-hook
+autoload -Uz compinit
+autoload -Uz history-search-end
+
+# custom functions
+fpath+=("$HOME/.zsh/functions")
+autoload -Uz my_rprompt
+autoload -Uz my_copyline
+
+# PATHS
+## Go
+path+=($HOME/go/bin)
+## User bin
+path+=($HOME/bin)
+## Ruby
+path+=($HOME/.rbenv/bin)
+
+# ハイフンを無視した補完（大文字小文字を区別する補完機能は無効にしておく必要あり）
+HYPHEN_INSENSITIVE="true"
+
+HISTFILE=~/.zsh_history
+HISTSIZE=100000
+SAVEHIST=100000
+
+# setopt
+## ディレクトリ名を入力してEnterを押すだけで、cd なしで移動できるようになります（例: Documents と打つだけで移動）。
+setopt AUTO_CD
+## ディレクトリを移動した際に、現在のディレクトリをスタックに保存します。pushd/popd コマンドを使って、ディレクトリ間を簡単に移動できます。
+setopt AUTO_PUSHD
+## メニュー補完を有効にします。補完候補が複数ある場合に、選択メニューを表示します。
+setopt AUTO_MENU
+## 拡張グロブを有効にします。これにより、より高度なパターンマッチングが可能になります。
+setopt EXTENDED_GLOB
+## コマンド履歴の展開を有効にします。! や ^ などの履歴展開機能を使用できるようになります。
+setopt HIST_EXPAND
+## 重複する履歴エントリを保存しないようにします。これにより、同じコマンドが連続して履歴に保存されるのを防ぎます。
+setopt HIST_IGNORE_ALL_DUPS
+## スペースで始まるコマンドを履歴に保存しないようにします。これにより、意図的に履歴に残したくないコマンドを除外できます。
+setopt HIST_IGNORE_SPACE
+## ファイルやディレクトリの種類を表示する際に、詳細な情報を提供します。
+setopt LIST_TYPES
+## イコール（=）を含む変数代入時に、変数名と値の間にスペースがあっても正しく解釈されるようにします。
+setopt MAGIC_EQUAL_SUBST
+## ディレクトリスタックに重複するエントリを追加しないようにします。
+setopt PUSHD_IGNORE_DUPS
+## 一時的な右プロンプトを有効にします。コマンド実行中に右側に表示される情報を一時的に表示できます。
+setopt TRANSIENT_RPROMPT
+
+# variables
+export LANG=ja_JP.UTF-8
+export EDITOR=vi
+export CLICOLOR=YES
+export TERM=xterm-256color
+
+# keybinds
+bindkey -e
+if zle -la | grep -q '^history-incremental-pattern-search'; then
+  bindkey '^R' history-incremental-pattern-search-backward
+  bindkey '^S' history-incremental-pattern-search-forward
+fi
+
+# executions
+colors
+my_rprompt
+my_copyline
+
+# prompt
+PROMPT="%{${fg[yellow]}%}$%{${reset_color}%} "
+
+# completion
+## zshの補完候補を「メニュー選択モード」にする。
+zstyle ':completion:*:default' menu select
+
+# alias
+alias ls="ls -G"
+alias tmux="tmux -2"
+alias o="git ls-files | peco | xargs open"
+alias e='cd $(ghq list -p | peco)'
+alias s='git status --short'
+alias v='atom'
+alias -g B='`git branch | peco | sed -e "s/^\*[ ]*//g"`'
+
+## function
+a() { git add . $1 --all; git status --short }
+k() { git grep -l $1 | xargs gsed -i -r -e "s;$1;$2;g" }
+m() { git commit -m "$*" }
+
+# シェルスクリプトのデバッグ表示カスタマイズ
+export PS4='+%N:%i> '
+
+# pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - zsh)"
+
+# direnv
+eval "$(direnv hook zsh)"
+
+# 各OS別設定
+{{ if eq .chezmoi.os "darwin" -}}
+# macOS .zshrc contents
+  if type brew &>/dev/null; then
+    FPATH=($(brew --prefix)/share/zsh/site-functions "$HOME/.zsh/functions" $FPATH)
+
+    autoload -Uz compinit
+    compinit
+  fi
+
+{{ else if eq .chezmoi.os "linux" -}}
+# Linux .zshrc contents
+
+{{ else if eq .chezmoi.os "windows" -}}
+# Windows .zshrc contents
+
+{{ end -}} 
+
+# local設定
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local

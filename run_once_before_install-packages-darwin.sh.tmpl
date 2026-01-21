@@ -1,21 +1,6 @@
-# MacOSでのみ実行
-{{- if eq .chezmoi.os "darwin" -}}
+{{- if (eq .chezmoi.os "darwin") -}}
 #!/bin/bash
 
-PACKAGES=(
-    chezmoi
-    neovim
-)
-
-CASKS=(
-    raycast
-    docker
-    slack
-    visual-studio-code
-    google-chrome
-)
-
-# Homebrewがインストールされていない場合はインストール
 if test ! $(which brew); then
    printf '\n\n\e[33mHomebrewが見つかりません。 \e[0mHomebrewをインストールします...'
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -27,13 +12,7 @@ fi
 printf '\nHomebrewの更新を開始します...\n'
 brew update
 
-printf '\nパッケージをインストールしています...\n'
-brew install ${PACKAGES[@]}
-
 printf '\n\n古いパッケージを削除しています...\n'
 brew cleanup
-
-printf '\n\ncaskアプリをインストールしています...\n'
-brew install --cask ${CASKS[@]}
 
 {{ end -}}
