@@ -1,0 +1,39 @@
+{{ if eq .chezmoi.os "windows" -}}
+# pwsh availability at template render time: {{ if lookPath "pwsh" }}present{{ else }}absent{{ end }}
+# This script seeds $PROFILE for Windows PowerShell 5.1 and (if installed) PowerShell 7+
+# so that both source the chezmoi-managed profile at ~/.config/powershell/profile.ps1.
+
+$ErrorActionPreference = 'Stop'
+
+$bootstrapLine = '. "$HOME\.config\powershell\profile.ps1"'
+$marker        = '$HOME\.config\powershell\profile.ps1'
+$documents     = [Environment]::GetFolderPath('MyDocuments')
+
+function Install-PSBootstrap {
+    param([Parameter(Mandatory)] [string] $ProfilePath)
+
+    $parent = Split-Path -Parent $ProfilePath
+    if (-not (Test-Path -LiteralPath $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+
+    if (-not (Test-Path -LiteralPath $ProfilePath)) {
+        Set-Content -LiteralPath $ProfilePath -Value $bootstrapLine -Encoding utf8
+        Write-Host "chezmoi: created bootstrap profile -> $ProfilePath"
+        return
+    }
+
+    $content = Get-Content -LiteralPath $ProfilePath -Raw
+    if ($content -notlike "*$marker*") {
+        Write-Warning "chezmoi: existing profile has no bootstrap line, leaving untouched -> $ProfilePath"
+    }
+}
+
+# Windows PowerShell 5.1 — always managed on Windows.
+Install-PSBootstrap -ProfilePath (Join-Path $documents 'WindowsPowerShell\Microsoft.PowerShell_profile.ps1')
+
+# PowerShell 7+ — only if pwsh is on PATH at run time.
+if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+    Install-PSBootstrap -ProfilePath (Join-Path $documents 'PowerShell\Microsoft.PowerShell_profile.ps1')
+}
+{{ end -}}
